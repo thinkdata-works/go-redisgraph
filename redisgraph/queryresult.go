@@ -58,6 +58,8 @@ func createQueryResult(results interface{}) (*QueryResult, error) {
 		return nil, err
 	}
 
+	fmt.Println("No error, parsing")
+
 	resultSet.parseValues(values)
 
 	return nil, nil
@@ -72,8 +74,11 @@ func (qr *QueryResult) parseHeader(rawheader interface{}) {
 	header, _ := redis.Values(rawheader, nil)
 	// TODO handle error
 
+	fmt.Println(fmt.Sprintf("Checking header %+v", header))
 	for _, col := range header {
+		fmt.Println(fmt.Sprintf("Got column %+v", col))
 		c, _ := redis.Values(col, nil)
+		fmt.Println(fmt.Sprintf("Got c %+v", c))
 		coltype, _ := redis.Int(c[0], nil)
 		name, _ := redis.String(c[1], nil)
 
@@ -102,7 +107,8 @@ func (qr *QueryResult) parseRecords(rawresults []interface{}) {
 			switch coltype {
 			case COLUMN_SCALAR:
 				s, _ := redis.Values(cell, nil)
-				// TODO build ResultCell and assign
+				t, _ := redis.Int(s[0], nil)
+				record[idx] = &ResultCell{RawValue: s[1], ColType: ScalarType(t)}
 				break
 			case COLUMN_NODE:
 				// encountered node, print warning
@@ -118,4 +124,3 @@ func (qr *QueryResult) parseRecords(rawresults []interface{}) {
 		qr.Rows[i] = record
 	}
 }
-
