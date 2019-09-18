@@ -60,42 +60,49 @@ func createQueryResult(results interface{}) (*QueryResult, error) {
 
 	fmt.Println("No error, parsing")
 
-	resultSet.parseValues(values)
+	if len(values) == 1 {
+		// Nothing
+	} else {
+		resultSet.parseValues(values)
+	}
 
 	return nil, nil
 }
 
 func (qr *QueryResult) parseValues(values []interface{}) {
 	qr.parseHeader(values[0])
-	qr.parseRecords(values[1:])
+	qr.parseRecords(values[1])
 }
 
 func (qr *QueryResult) parseHeader(rawheader interface{}) {
-	header, _ := redis.Values(rawheader, nil)
-	// TODO handle error
+	headers, err := redis.Values(rawheader, nil)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Error: %s", err.Error()))
+	}
 
-	fmt.Println(fmt.Sprintf("Checking header %+v", header))
-	for _, col := range header {
-		fmt.Println(fmt.Sprintf("Got column %+v", col))
-		c, _ := redis.Values(col, nil)
-		fmt.Println(fmt.Sprintf("Got c %+v", c))
-		coltype, _ := redis.Int(c[0], nil)
-		name, _ := redis.String(c[1], nil)
+	for _, header := range headers {
+		name, err := redis.String(header, nil)
+		if err != nil {
+			fmt.Println(fmt.Printf("error: %s", err.Error()))
+		}
 
-		fmt.Println(fmt.Sprintf("Got type %+v", coltype))
-		fmt.Println(fmt.Sprintf("Got column names %+v", name))
-
-		qr.Header.types = append(qr.Header.types, ColumnType(coltype))
 		qr.Header.names = append(qr.Header.names, name)
 	}
+
+	// TODO - left off here
+	fmt.Println(fmt.Sprintf("Got names %+v", qr.Header.names))
 }
 
-func (qr *QueryResult) parseRecords(rawresults []interface{}) {
-	records, _ := redis.Values(rawresults, nil)
-	// TODO handle error
+
+func (qr *QueryResult) parseRecords(rawresults interface{}) {
+	records, err := redis.Values(rawresults, nil)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Error: %+s", err.Error()))
+	}
 
 	qr.Rows = make([][]*ResultCell, len(records))
 
+	// TODO need to do this whole thing over
 	for i, record := range records {
 		cells, _ := redis.Values(record, nil)
 		// TODO handle error

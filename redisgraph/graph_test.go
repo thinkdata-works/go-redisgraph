@@ -37,4 +37,8 @@ func (suite *Suite) TestGraphQuery1() {
 	res, err := graph.Query("CREATE (:person {name: 'Steve Albini'})")
 	suite.Assert().NoError(err)
 	fmt.Sprintf("%+v", res)
+
+	res, err = graph.Query("MATCH (p:person) RETURN p.name as name")
+	suite.Assert().NoError(err)
+	fmt.Sprintf("%+v", res)
 }
