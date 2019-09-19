@@ -9,10 +9,22 @@ import(
 
 type Suite struct {
 	suite.Suite
+	conn redis.Conn
+	graph *Graph
 }
 
 func (suite *Suite) SetupDB() {
+	conn, err := redis.Dial("tcp", "redisgraph:6379")
+	suite.Assert().NoError(err)
 
+	suite.conn = conn
+
+	// Create graph connection
+	graph := CreateGraph(&conn, "graph-test")
+	res, err := graph.Query("MATCH (n) DELETE n")
+	fmt.Println(fmt.Sprintf("Response clearing graph: %+v", res))
+	suite.Assert().NoError(err)
+	suite.graph = graph
 }
 
 func (suite *Suite) BeforeTest(suitename string, testname string) {
@@ -23,22 +35,34 @@ func TestGraph(t *testing.T) {
 	suite.Run(t, new(Suite))
 }
 
-func (suite *Suite) TestGraphQuery1() {
-	// TODO move all graph stuff to test hooks
-	// Open graph connection
-	conn, err := redis.Dial("tcp", "redisgraph:6379")
-	defer conn.Close()
-	suite.Assert().NoError(err)
+func (suite *Suite) TestSimpleCreateQuery() {
+	defer suite.conn.Close()
+	asserts := suite.Assert()
 
-	// TODO defer cleaing the graph
+	res, err := suite.graph.Query("CREATE (:person {name: 'Steve Albini'})")
+	asserts.NoError(err)
 
-	// Insert some things
-	graph := CreateGraph(&conn, "graph-test")
-	res, err := graph.Query("CREATE (:person {name: 'Steve Albini'})")
-	suite.Assert().NoError(err)
-	fmt.Sprintf("%+v", res)
+	// Should be an empty response
+	asserts.Equal(0, len(res.Headers))
+	asserts.Equal(0, len(res.Rows))
 
-	res, err = graph.Query("MATCH (p:person) RETURN p.name as name")
+	fmt.Println(fmt.Sprintf("%+v", res))
+
+	res, err = suite.graph.Query("MATCH (p:person) RETURN p.name as name")
+	asserts.NoError(err)
+
+	// Should contain the name
+	asserts.Equal(1, len(res.Headers))
+	asserts.Equal("name", res.Headers[0])
+	asserts.Equal(1, len(res.Rows)) // one row
+	asserts.Equal(1, len(res.Rows[0])) // one cell
+	suite.assertCellEqualsString(res.Rows[0][0], "Steve Albini")
+
+	fmt.Println(fmt.Sprintf("%+v", res))
+}
+
+func (suite *Suite) assertCellEqualsString(cell ResultCell, value string) {
+	str, err := cell.ToString()
 	suite.Assert().NoError(err)
-	fmt.Sprintf("%+v", res)
+	suite.Assert().Equal(value, str)
 }
