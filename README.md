@@ -1,6 +1,6 @@
 # redisgraph-go-query - Redisgraph Go Query client
 
-Support for querying redisgraph over the redigo client.
+Support for querying redisgraph over the redigo client. This is derived from the [redisgraph-go](https://github.com/RedisGraph/redisgraph-go) client.
 
 This library focuses on adding support for typing results and for now just supports simple scalar types.
 
