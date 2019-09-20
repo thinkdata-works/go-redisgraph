@@ -1,4 +1,4 @@
-package rgraphquery
+package graph
 
 import "github.com/gomodule/redigo/redis"
 
