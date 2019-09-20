@@ -1,7 +1,6 @@
 package rgraphquery
 
-import(
-	"fmt"
+import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -23,11 +22,10 @@ func (suite *Suite) SetupDB() {
 	graph := CreateGraph(&conn, "graph-test")
 
 	// Create a dummy node to initialize graph
-	res, err := graph.Query("CREATE (:node)")
+	_, err = graph.Query("CREATE (:node)")
 	suite.Assert().NoError(err)
 
-	res, err = graph.Query("MATCH (n) DELETE n")
-	fmt.Println(fmt.Sprintf("Response clearing graph: %+v", res))
+	_, err = graph.Query("MATCH (n) DELETE n")
 	suite.Assert().NoError(err)
 	suite.graph = graph
 }

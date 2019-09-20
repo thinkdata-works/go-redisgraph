@@ -23,9 +23,8 @@ func createQueryResult(results interface{}) (*QueryResult, error) {
 		return nil, err
 	}
 
-	if len(values) == 1 {
-		// Nothing
-	} else {
+	// First row will always be headers
+	if len(values) > 1 {
 		err := resultSet.parseValues(values)
 		if err != nil {
 			return nil, err
