@@ -1,6 +1,7 @@
-package redisgraph
+package rgraphquery
 
 import (
+	"errors"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -76,9 +77,32 @@ func (qr *QueryResult) parseRecords(rawresults interface{}) error {
 		qr.Rows[i] = make([]ResultCell, len(record.([]interface{})))
 
 		for j, cell := range record.([]interface{}) {
-			qr.Rows[i][j] = ResultCell{Value: cell}
+			qr.Rows[i][j] = ResultCell{value: cell}
 		}
 	}
 
 	return nil
+}
+
+// Returns a set of pointers to the original cells
+func (qr *QueryResult) CellsFor(header string) ([]*ResultCell, error) {
+	i := -1
+
+	// get index of header
+	for j, headerv := range(qr.Headers) {
+		if headerv == header {
+			i = j
+		}
+	}
+
+	if i < 0 {
+		return nil, errors.New("Header not found")
+	}
+
+	cells := make([]*ResultCell, len(qr.Rows))
+	for j, row := range(qr.Rows) {
+		cells[j] = &row[i]
+	}
+
+	return cells, nil
 }

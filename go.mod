@@ -1,4 +1,4 @@
-module github.com/thinkdata-works/go-redisgraph
+module github.com/thinkdata-works/redisgraph-go-query
 
 require (
 	github.com/gomodule/redigo v2.0.0+incompatible
