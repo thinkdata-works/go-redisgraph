@@ -1,4 +1,4 @@
-package rgraphquery
+package graph
 
 import (
 	"errors"

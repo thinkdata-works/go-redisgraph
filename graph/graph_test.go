@@ -1,4 +1,4 @@
-package rgraphquery
+package graph
 
 import (
 	"github.com/gomodule/redigo/redis"
@@ -12,7 +12,7 @@ type Suite struct {
 	graph *Graph
 }
 
-func (suite *Suite) SetupDB() {
+func (suite *Suite) setupdb() {
 	conn, err := redis.Dial("tcp", "redisgraph:6379")
 	suite.Assert().NoError(err)
 
@@ -31,7 +31,7 @@ func (suite *Suite) SetupDB() {
 }
 
 func (suite *Suite) BeforeTest(suitename string, testname string) {
-	suite.SetupDB()
+	suite.setupdb()
 }
 
 func TestGraph(t *testing.T) {

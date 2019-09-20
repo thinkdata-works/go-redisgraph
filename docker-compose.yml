@@ -12,4 +12,4 @@ services:
     build: .
     volumes:
       - .:/app
-    command: go test -v ./rgraphquery
+    command: go test -v ./graph
