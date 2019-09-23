@@ -13,7 +13,7 @@ func CreateGraph(conn *redis.Conn, name string) *Graph {
 
 func (g *Graph) Query(query string) (*QueryResult, error) {
 	conn := *g.conn
-	results, err := conn.Do("GRAPH.QUERY", g.Name, query)
+	results, err := conn.Do("GRAPH.QUERY", g.Name, query, "--compact")
 	if err != nil {
 		return nil, err
 	}

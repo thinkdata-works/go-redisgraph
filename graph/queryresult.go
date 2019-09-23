@@ -2,13 +2,38 @@ package graph
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gomodule/redigo/redis"
 )
 
 type QueryResult struct {
 	Rows [][]ResultCell
 	Headers []string
+	HeaderTypes []ColumnTypes
 }
+
+type ColumnTypes int
+
+const (
+	COLUMN_UNKNOWN ColumnTypes = iota
+	COLUMN_SCALAR
+	COLUMN_NODE
+	COLUMN_RELATION
+)
+
+type ScalarTypes int
+
+const (
+	VALUE_UNKNOWN ScalarTypes = iota
+	VALUE_NULL
+	VALUE_STRING
+	VALUE_INTEGER
+	VALUE_BOOLEAN
+	VALUE_DOUBLE
+	VALUE_ARRAY
+	VALUE_EDGE
+	VALUE_NODE
+)
 
 func createQueryResult(results interface{}) (*QueryResult, error) {
 	resultSet := &QueryResult{}
@@ -44,6 +69,7 @@ func (qr *QueryResult) parseValues(values []interface{}) error {
 }
 
 func (qr *QueryResult) parseHeader(rawheader interface{}) error {
+	fmt.Println(fmt.Sprintf("Parsing raw header: %+v", rawheader))
 	headers, err := redis.Values(rawheader, nil)
 	if err != nil {
 		return err
@@ -52,6 +78,7 @@ func (qr *QueryResult) parseHeader(rawheader interface{}) error {
 	qr.Headers = make([]string, len(headers))
 
 	for i, header := range headers {
+		fmt.Println(fmt.Sprintf("Stringifying header: %+v", header))
 		name, err := redis.String(header, nil)
 		if err != nil {
 			return err

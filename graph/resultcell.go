@@ -7,6 +7,7 @@ import (
 
 type ResultCell struct {
 	value interface{}
+
 }
 
 func (r *ResultCell) ToString() (string, error) {
